@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+/* DEPLOY huisstijl: wit-eerst, dunne lijnen, serif-koppen, geen afronding of schaduw. */
+@theme {
+  --color-brand: #265b93;
+  --color-cyan: #29c5dc;
+  --color-magenta: #ae5399;
+  --color-ink: #1f3350;
+  --color-muted: #5c6b7e;
+  --color-label: #7f7f7f;
+  --color-line: #d8d8d8;
+  --color-subtle: #f4f7fa;
+
+  --font-serif: "Crimson Text", "EB Garamond", Georgia, serif;
+  --font-sans: Carlito, Calibri, "Segoe UI", Arial, sans-serif;
+
+  --radius-*: initial;
+  --shadow-*: initial;
+}
+
+html,
+body {
+  background: #ffffff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  color: var(--color-brand);
+}
+
+/* Scheidingsbalk onder een kop: helft cyaan, helft magenta. */
+.brand-bar {
+  width: 140px;
+  height: 6px;
+  background: linear-gradient(to right, var(--color-cyan) 50%, var(--color-magenta) 50%);
+}
+
+.kicker {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+  color: var(--color-label);
+}
