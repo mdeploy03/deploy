@@ -68,6 +68,12 @@ describe("organisaties", () => {
     expect(JSON.parse(update.changes)).toEqual({ status: { from: "prospect", to: "client" } });
   });
 
+  it("laat bij een gedeeltelijke wijziging de overige velden ongemoeid", async () => {
+    const org = await createOrg({ status: "client", sector: "Zorg" });
+    const res = await api("PATCH", `/organizations/${org.id}`, { name: "Nieuwe naam" });
+    expect(res.body).toMatchObject({ name: "Nieuwe naam", status: "client", sector: "Zorg" });
+  });
+
   it("geeft 404 voor een onbekende klant", async () => {
     expect((await api("GET", "/organizations/nope")).status).toBe(404);
     expect((await api("PATCH", "/organizations/nope", { name: "x" })).status).toBe(404);

@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from "react-router";
 import { ACTIVITY_TYPES, activityTypeLabel, contactName, type ActivityType, type Contact } from "../../shared/crm";
 import { ApiError } from "../api";
 import { ContactForm, OrganizationForm } from "../crm/forms";
+import { DealForm } from "../crm/DealForm";
+import { dealStageLabel, formatEuro, type DealListItem } from "../../shared/deals";
 import { useAddActivity, useDeleteActivity, useDeleteOrganization, useOrganization } from "../crm/hooks";
 import { StatusChip } from "../crm/StatusChip";
 import { Button, Card, Chip, Dialog, Empty, ErrorText, Field, Input, Select, Textarea, formatDateTime } from "../ui";
@@ -14,6 +16,7 @@ export function CustomerDetail() {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [contactDialog, setContactDialog] = useState<{ contact?: Contact } | null>(null);
+  const [dealDialog, setDealDialog] = useState<{ deal?: DealListItem } | null>(null);
 
   if (query.isPending) return <p className="text-muted">Laden…</p>;
   if (query.error) {
@@ -138,12 +141,51 @@ export function CustomerDetail() {
           </Card>
         </div>
 
+        <div className="grid content-start gap-6">
+        <Card
+          accent="brand"
+          title={`Kansen (${org.deals.length})`}
+          actions={
+            <Button variant="link" onClick={() => setDealDialog({})}>
+              + Nieuwe kans
+            </Button>
+          }
+        >
+          {org.deals.length === 0 ? (
+            <p className="text-sm text-muted">Nog geen kansen voor deze klant.</p>
+          ) : (
+            <ul className="divide-y divide-line">
+              {org.deals.map((d) => (
+                <li key={d.id}>
+                  <button
+                    className="flex w-full items-center justify-between gap-3 py-2 text-left text-sm hover:bg-subtle"
+                    onClick={() => setDealDialog({ deal: d })}
+                  >
+                    <span className="min-w-0">
+                      <span className="block font-bold text-ink">{d.title}</span>
+                      <span className="text-muted">{d.contactName ?? ""}</span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-2">
+                      <span className="font-bold text-brand">{formatEuro(d.valueCents)}</span>
+                      <Chip tone={d.stage === "won" ? "brand" : d.stage === "lost" ? "muted" : "magenta"}>{dealStageLabel[d.stage]}</Chip>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
         <Card accent="magenta" title="Tijdlijn">
           <ActivityForm organizationId={org.id} contacts={org.contacts} />
           <Timeline organizationId={org.id} activities={org.activities} />
         </Card>
+        </div>
       </div>
 
+      <Dialog open={!!dealDialog} title={dealDialog?.deal ? "Kans bewerken" : "Nieuwe kans"} onClose={() => setDealDialog(null)}>
+        {dealDialog && <DealForm deal={dealDialog.deal} organizationId={org.id} onDone={() => setDealDialog(null)} />}
+      </Dialog>
       <Dialog open={editing} title="Klant bewerken" onClose={() => setEditing(false)}>
         <OrganizationForm org={org} onDone={() => setEditing(false)} />
       </Dialog>

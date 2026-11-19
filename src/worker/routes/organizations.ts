@@ -1,8 +1,9 @@
 import { Hono } from "hono";
 import { and, desc, eq, sql, type SQL } from "drizzle-orm";
-import { activityInput, organizationInput, ORG_STATUSES, type OrgStatus } from "../../shared/crm";
+import { activityInput, organizationInput, organizationUpdate, ORG_STATUSES, type OrgStatus } from "../../shared/crm";
 import { getDb } from "../db";
-import { activities, contacts, organizations, users } from "../db/schema";
+import { activities, contacts, deals, organizations, users } from "../db/schema";
+import { selectDeals } from "./deals";
 import { audit, diff } from "../lib/audit";
 import { jsonBody, likePattern } from "../lib/http";
 import type { AppEnv } from "../types";
@@ -74,7 +75,7 @@ organizationRoutes.get("/:id", async (c) => {
     .where(eq(organizations.id, id));
   if (!org) return c.json({ error: "Klant niet gevonden" }, 404);
 
-  const [orgContacts, timeline] = await Promise.all([
+  const [orgContacts, timeline, orgDeals] = await Promise.all([
     db
       .select()
       .from(contacts)
@@ -99,9 +100,10 @@ organizationRoutes.get("/:id", async (c) => {
       .where(eq(activities.organizationId, id))
       .orderBy(desc(activities.occurredAt), desc(activities.createdAt))
       .limit(200),
+    selectDeals(db).where(eq(deals.organizationId, id)).orderBy(desc(deals.updatedAt)),
   ]);
 
-  return c.json({ ...org, contacts: orgContacts, activities: timeline });
+  return c.json({ ...org, contacts: orgContacts, activities: timeline, deals: orgDeals });
 });
 
 organizationRoutes.post("/", jsonBody(organizationInput), async (c) => {
@@ -117,7 +119,7 @@ organizationRoutes.post("/", jsonBody(organizationInput), async (c) => {
   return c.json(created, 201);
 });
 
-organizationRoutes.patch("/:id", jsonBody(organizationInput.partial()), async (c) => {
+organizationRoutes.patch("/:id", jsonBody(organizationUpdate), async (c) => {
   const db = getDb(c.env);
   const id = c.req.param("id");
   const data = c.req.valid("json");

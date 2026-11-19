@@ -8,6 +8,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { Placeholder } from "./pages/Placeholder";
 import { Customers } from "./pages/Customers";
 import { CustomerDetail } from "./pages/CustomerDetail";
+import { Pipeline } from "./pages/Pipeline";
 
 const router = createBrowserRouter([
   {
@@ -17,8 +18,9 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "klanten", element: <Customers /> },
       { path: "klanten/:id", element: <CustomerDetail /> },
-      { path: "pipeline", element: <Placeholder title="Pipeline" step="stap 4" /> },
+      { path: "pipeline", element: <Pipeline /> },
       { path: "projecten", element: <Placeholder title="Projecten" step="stap 5" /> },
+      { path: "projecten/:id", element: <Placeholder title="Project" step="stap 5" /> },
       { path: "mijn-werk", element: <Placeholder title="Mijn werk" step="stap 5" /> },
       { path: "*", element: <Placeholder title="Pagina niet gevonden" /> },
     ],

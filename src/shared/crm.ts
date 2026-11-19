@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { DealListItem } from "./deals";
 
 // Gedeeld tussen API (validatie) en app (formulieren, labels).
 
@@ -27,7 +28,7 @@ export const activityTypeLabel: Record<ActivityType, string> = {
   meeting: "Afspraak",
 };
 
-export const organizationInput = z.object({
+const organizationFields = {
   name: z.string().trim().min(1, "Naam is verplicht").max(200),
   kvk: z
     .string()
@@ -38,10 +39,17 @@ export const organizationInput = z.object({
   sector: optionalText(100),
   website: optionalText(300),
   address: optionalText(500),
-  status: z.enum(ORG_STATUSES).default("prospect"),
+  status: z.enum(ORG_STATUSES),
   accountManagerId: optionalText(64),
+};
+
+export const organizationInput = z.object({
+  ...organizationFields,
+  status: organizationFields.status.default("prospect"),
 });
 export type OrganizationInput = z.input<typeof organizationInput>;
+// Bij wijzigen géén standaardwaarden: wat niet is meegestuurd, blijft zoals het was.
+export const organizationUpdate = z.object(organizationFields).partial();
 
 export const contactInput = z.object({
   organizationId: optionalText(64),
@@ -123,6 +131,7 @@ export type OrganizationDetail = Organization & {
   accountManagerName: string | null;
   contacts: Contact[];
   activities: Activity[];
+  deals: DealListItem[];
 };
 
 export function contactName(c: { firstName: string; lastName: string | null }) {

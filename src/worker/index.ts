@@ -5,6 +5,7 @@ import { HTTPException } from "hono/http-exception";
 import { sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { contactRoutes } from "./routes/contacts";
+import { dealRoutes } from "./routes/deals";
 import { organizationRoutes } from "./routes/organizations";
 import { userRoutes } from "./routes/users";
 import type { AppEnv } from "./types";
@@ -47,6 +48,7 @@ api.get("/health", async (c) => {
 
 api.route("/organizations", organizationRoutes);
 api.route("/contacts", contactRoutes);
+api.route("/deals", dealRoutes);
 api.route("/users", userRoutes);
 
 app.route("/api", api);
