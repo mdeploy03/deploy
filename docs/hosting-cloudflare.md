@@ -32,7 +32,9 @@ wie een productie-deploy moet goedkeuren. Maak ook een omgeving `staging` aan (z
 ## Stap 3 – Deployen
 
 - Push naar `main`: tests, daarna automatisch naar staging.
-- Productie: publiceer een GitHub-release, of **Actions → CI en deploy → Run workflow → production**.
+- Productie: push een versietag (`git tag v1.2.0 && git push origin v1.2.0`), publiceer een GitHub-release,
+  of kies **Actions → CI en deploy → Run workflow → production**. Met "Required reviewers" op de omgeving
+  `production` wacht de deploy op goedkeuring.
 
 De workflow past eerst de databasemigraties toe (`wrangler d1 migrations apply --remote`) en deployt
 daarna de Worker.

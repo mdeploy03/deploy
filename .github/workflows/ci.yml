@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+    # Versietag (bijv. v1.0.0) → productie, na goedkeuring in de omgeving "production".
+    tags: ["v*"]
   release:
     types: [published]
   workflow_dispatch:
@@ -49,6 +51,7 @@ jobs:
     needs: test
     if: >-
       github.event_name == 'release' ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
       (github.event_name == 'workflow_dispatch' && inputs.target == 'production')
     uses: ./.github/workflows/deploy.yml
     with:
