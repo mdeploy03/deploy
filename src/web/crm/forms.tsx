@@ -136,7 +136,7 @@ export function ContactForm({
         </Field>
         {!organizationId && (
           <Field label="Klant" error={errors.organizationId}>
-            <Select name="organizationId" defaultValue={contact?.organizationId ?? ""}>
+            <Select key={orgs.data ? "geladen" : "laden"} name="organizationId" defaultValue={contact?.organizationId ?? ""}>
               <option value="">— Geen —</option>
               {orgs.data?.map((o) => (
                 <option key={o.id} value={o.id}>

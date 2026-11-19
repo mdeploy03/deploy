@@ -28,7 +28,7 @@ export function ErrorPage() {
       <p className="mt-6 text-muted">
         Probeer de pagina opnieuw te laden. Blijft het misgaan, meld dan wat je deed vlak voordat dit scherm verscheen.
       </p>
-      <a href="/" className="mt-4 inline-block font-bold text-brand hover:underline">
+      <a href="/" className="mt-4 inline-block font-semibold text-brand hover:underline">
         Naar het dashboard
       </a>
     </div>

@@ -5,7 +5,8 @@ import type { Dashboard as DashboardData } from "../../shared/dashboard";
 import { dealStageLabel, formatEuro, OPEN_STAGES } from "../../shared/deals";
 import { taskPriorityLabel } from "../../shared/projects";
 import { api } from "../api";
-import { Card, Chip, ErrorText, PageHeader, formatDate, formatDateTime, useDocumentTitle } from "../ui";
+import { AlarmClock, Briefcase, CalendarClock, MessageSquareText, Scale, Target, TrendingUp, Trophy, type LucideIcon } from "lucide-react";
+import { Card, Chip, ErrorText, PageHeader, Progress, Stat as StatTile, cardClass, formatDate, formatDateTime, useDocumentTitle, type Accent } from "../ui";
 
 const day = (iso: string | null) => (iso ? formatDate(new Date(iso).getTime()) : "—");
 const todayIso = () => new Date().toLocaleDateString("sv-SE");
@@ -30,10 +31,11 @@ export function Dashboard() {
       ) : (
         <div className="grid gap-6">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat to="/pipeline" label="Open kansen" value={String(d.pipeline.openCount)} sub={`${formatEuro(d.pipeline.openValueCents)} totaal`} accent="cyan" />
-            <Stat to="/pipeline" label="Gewogen pipeline" value={formatEuro(d.pipeline.weightedValueCents)} sub="waarde × slagingskans" accent="cyan" />
+            <Stat to="/pipeline" icon={Target} label="Open kansen" value={String(d.pipeline.openCount)} sub={`${formatEuro(d.pipeline.openValueCents)} totaal`} accent="cyan" />
+            <Stat to="/pipeline" icon={Scale} label="Gewogen pipeline" value={formatEuro(d.pipeline.weightedValueCents)} sub="waarde × slagingskans" accent="cyan" />
             <Stat
               to="/pipeline"
+              icon={Trophy}
               label="Gewonnen dit kwartaal"
               value={formatEuro(d.pipeline.wonThisQuarter.valueCents)}
               sub={`${d.pipeline.wonThisQuarter.count} ${d.pipeline.wonThisQuarter.count === 1 ? "kans" : "kansen"}`}
@@ -41,6 +43,7 @@ export function Dashboard() {
             />
             <Stat
               to="/mijn-werk"
+              icon={AlarmClock}
               label="Taken te laat"
               value={String(d.tasks.overdueCount)}
               sub={`${d.projects.activeCount} actieve ${d.projects.activeCount === 1 ? "project" : "projecten"}`}
@@ -50,11 +53,11 @@ export function Dashboard() {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <Card accent="cyan" title="Pipeline per fase">
+            <Card accent="cyan" icon={TrendingUp} title="Pipeline per fase">
               <PipelineBars data={d} />
             </Card>
 
-            <Card accent="magenta" title="Deadlines t/m zondag">
+            <Card accent="magenta" icon={CalendarClock} title="Deadlines t/m zondag">
               {d.tasks.dueThisWeek.length === 0 ? (
                 <p className="text-sm text-muted">Geen taken met een deadline deze week.</p>
               ) : (
@@ -62,7 +65,7 @@ export function Dashboard() {
                   {d.tasks.dueThisWeek.map((t) => (
                     <li key={t.id} className="flex items-start justify-between gap-3 py-2 text-sm">
                       <div className="min-w-0">
-                        <span className="font-bold text-ink">{t.title}</span>
+                        <span className="font-semibold text-ink">{t.title}</span>
                         {t.priority === "high" && (
                           <span className="ml-2">
                             <Chip tone="magenta">{taskPriorityLabel.high}</Chip>
@@ -75,7 +78,7 @@ export function Dashboard() {
                           {t.assigneeName && <> · {t.assigneeName}</>}
                         </div>
                       </div>
-                      <span className={`shrink-0 text-xs ${t.dueDate < today ? "font-bold text-magenta" : "text-muted"}`}>
+                      <span className={`shrink-0 text-xs ${t.dueDate < today ? "font-semibold text-magenta" : "text-muted"}`}>
                         {t.dueDate < today ? "te laat · " : t.dueDate === today ? "vandaag · " : ""}
                         {day(t.dueDate)}
                       </span>
@@ -85,7 +88,7 @@ export function Dashboard() {
               )}
             </Card>
 
-            <Card accent="brand" title="Actieve projecten">
+            <Card accent="brand" icon={Briefcase} title="Actieve projecten">
               {d.projects.active.length === 0 ? (
                 <p className="text-sm text-muted">Geen actieve projecten.</p>
               ) : (
@@ -95,17 +98,17 @@ export function Dashboard() {
                     return (
                       <li key={p.id} className="text-sm">
                         <div className="flex items-baseline justify-between gap-3">
-                          <Link to={`/projecten/${p.id}`} className="font-bold text-brand hover:underline">
+                          <Link to={`/projecten/${p.id}`} className="font-semibold text-brand hover:underline">
                             {p.name}
                           </Link>
                           <span className="shrink-0 text-xs text-muted">
-                            {p.overdueCount > 0 && <span className="font-bold text-magenta">{p.overdueCount} te laat · </span>}
+                            {p.overdueCount > 0 && <span className="font-semibold text-magenta">{p.overdueCount} te laat · </span>}
                             {p.endDate ? `t/m ${day(p.endDate)}` : ""}
                           </span>
                         </div>
                         <div className="text-xs text-muted">{p.organizationName}</div>
-                        <div className="mt-1 h-2 bg-subtle" title={`${p.doneCount}/${p.taskCount} taken klaar`}>
-                          <div className="h-2 bg-brand" style={{ width: `${pct}%` }} />
+                        <div className="mt-1.5" title={`${p.doneCount}/${p.taskCount} taken klaar`}>
+                          <Progress value={pct} />
                         </div>
                       </li>
                     );
@@ -114,7 +117,7 @@ export function Dashboard() {
               )}
             </Card>
 
-            <Card accent="cyan" title="Kansen om op te volgen">
+            <Card accent="cyan" icon={Target} title="Kansen om op te volgen">
               {d.pipeline.closingSoon.length === 0 ? (
                 <p className="text-sm text-muted">Geen open kansen met een sluitdatum in de komende twee weken.</p>
               ) : (
@@ -122,12 +125,12 @@ export function Dashboard() {
                   {d.pipeline.closingSoon.map((k) => (
                     <li key={k.id} className="flex items-start justify-between gap-3 py-2 text-sm">
                       <div className="min-w-0">
-                        <div className="font-bold text-ink">{k.title}</div>
+                        <div className="font-semibold text-ink">{k.title}</div>
                         <div className="text-xs text-muted">
                           {k.organizationName} · {dealStageLabel[k.stage]} · {formatEuro(k.valueCents)}
                         </div>
                       </div>
-                      <span className={`shrink-0 text-xs ${k.expectedCloseDate < today ? "font-bold text-magenta" : "text-muted"}`}>
+                      <span className={`shrink-0 text-xs ${k.expectedCloseDate < today ? "font-semibold text-magenta" : "text-muted"}`}>
                         {k.expectedCloseDate < today ? "verlopen · " : ""}
                         {day(k.expectedCloseDate)}
                       </span>
@@ -138,15 +141,15 @@ export function Dashboard() {
             </Card>
           </div>
 
-          <Card accent="magenta" title="Laatste klantcontact">
+          <Card accent="magenta" icon={MessageSquareText} title="Laatste klantcontact">
             {d.recentActivities.length === 0 ? (
               <p className="text-sm text-muted">Nog niets vastgelegd op een tijdlijn.</p>
             ) : (
               <ul className="grid gap-3">
                 {d.recentActivities.map((a) => (
-                  <li key={a.id} className="border-l-2 border-cyan pl-3 text-sm">
+                  <li key={a.id} className="border-l-2 border-cyan/60 pl-3 text-sm">
                     <div className="text-xs text-muted">
-                      <Link to={`/klanten/${a.organizationId}`} className="font-bold text-brand hover:underline">
+                      <Link to={`/klanten/${a.organizationId}`} className="font-semibold text-brand hover:underline">
                         {a.organizationName}
                       </Link>{" "}
                       · {activityTypeLabel[a.type]} · {formatDateTime(a.occurredAt)}
@@ -163,13 +166,10 @@ export function Dashboard() {
   );
 }
 
-function Stat({ to, label, value, sub, accent, alert }: { to: string; label: string; value: string; sub: string; accent: "cyan" | "brand" | "magenta"; alert?: boolean }) {
-  const border = { cyan: "border-l-cyan", brand: "border-l-brand", magenta: "border-l-magenta" }[accent];
+function Stat({ to, icon, label, value, sub, accent, alert }: { to: string; icon: LucideIcon; label: string; value: string; sub: string; accent: Accent; alert?: boolean }) {
   return (
-    <Link to={to} className={`block border-2 border-l-[12px] border-line ${border} bg-white p-4 hover:bg-subtle`}>
-      <div className="kicker">{label}</div>
-      <div className={`mt-1 font-serif text-3xl font-semibold ${alert ? "text-magenta" : "text-brand"}`}>{value}</div>
-      <div className="text-xs text-muted">{sub}</div>
+    <Link to={to} className={`${cardClass} block p-5 transition-shadow hover:shadow-pop`}>
+      <StatTile icon={icon} label={label} value={value} sub={sub} accent={accent} alert={alert} />
     </Link>
   );
 }
@@ -186,10 +186,10 @@ function PipelineBars({ data }: { data: DashboardData }) {
             <dt className="text-ink">
               {dealStageLabel[r.stage]} <span className="text-xs text-muted">({r.count})</span>
             </dt>
-            <dd className="font-bold text-brand">{formatEuro(r.valueCents)}</dd>
+            <dd className="font-semibold text-brand">{formatEuro(r.valueCents)}</dd>
           </div>
-          <div className="mt-1 h-3 bg-subtle">
-            <div className="h-3 bg-cyan" style={{ width: `${(r.valueCents / max) * 100}%` }} />
+          <div className="mt-1.5">
+            <Progress value={(r.valueCents / max) * 100} tone="cyan" />
           </div>
         </div>
       ))}

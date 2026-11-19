@@ -3,15 +3,16 @@ import { DEAL_STAGES, dealStageLabel, formatEuro, OPEN_STAGES, type DealListItem
 import { DealForm } from "../crm/DealForm";
 import { useDeals, useMoveDeal } from "../crm/dealHooks";
 import { useUsers } from "../crm/hooks";
-import { Button, Dialog, ErrorText, Input, PageHeader, Select, formatDate } from "../ui";
+import { CalendarDays, Plus, Scale, Target, Wallet } from "lucide-react";
+import { Button, Dialog, ErrorText, PageHeader, SearchInput, Select, Stat, cardClass, formatDate } from "../ui";
 
-const stageAccent: Record<DealStage, string> = {
-  lead: "border-t-line",
-  qualified: "border-t-cyan",
-  proposal: "border-t-cyan",
-  negotiation: "border-t-brand",
-  won: "border-t-brand",
-  lost: "border-t-magenta",
+const stageDot: Record<DealStage, string> = {
+  lead: "bg-label",
+  qualified: "bg-cyan",
+  proposal: "bg-cyan",
+  negotiation: "bg-brand",
+  won: "bg-brand",
+  lost: "bg-magenta",
 };
 
 const isOpen = (s: DealStage) => (OPEN_STAGES as readonly DealStage[]).includes(s);
@@ -62,17 +63,23 @@ export function Pipeline() {
 
   return (
     <div>
-      <PageHeader kicker="Sales" title="Pipeline" actions={<Button onClick={() => setDialog({})}>Nieuwe kans</Button>} />
+      <PageHeader kicker="Sales" title="Pipeline" actions={<Button icon={Plus} onClick={() => setDialog({})}>Nieuwe kans</Button>} />
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <Stat label="Open kansen" value={String(totals.count)} />
-        <Stat label="Pipelinewaarde" value={formatEuro(totals.value)} />
-        <Stat label="Gewogen waarde" value={formatEuro(totals.weighted)} accent />
+        <div className={`${cardClass} p-5`}>
+          <Stat icon={Target} accent="cyan" label="Open kansen" value={String(totals.count)} />
+        </div>
+        <div className={`${cardClass} p-5`}>
+          <Stat icon={Wallet} accent="brand" label="Pipelinewaarde" value={formatEuro(totals.value)} />
+        </div>
+        <div className={`${cardClass} p-5`}>
+          <Stat icon={Scale} accent="magenta" label="Gewogen waarde" value={formatEuro(totals.weighted)} sub="waarde × slagingskans" />
+        </div>
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="w-full sm:w-80">
-          <Input type="search" placeholder="Zoek op titel of klant…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <SearchInput placeholder="Zoek op titel of klant…" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
         {users.data && users.data.length > 0 && (
           <div className="w-full sm:w-56">
@@ -89,7 +96,7 @@ export function Pipeline() {
       </div>
       <ErrorText error={deals.error ?? move.error} />
 
-      <div className="-mx-4 overflow-x-auto px-4 pb-4">
+      <div className="-mx-4 overflow-x-auto px-4 pb-4 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
         <div className="grid min-w-[1100px] grid-cols-6 gap-3">
           {DEAL_STAGES.map((stage) => {
             const list = columns[stage];
@@ -103,19 +110,22 @@ export function Pipeline() {
                   if (dropTarget?.stage !== stage) setDropTarget({ stage, beforeId: null });
                 }}
                 onDrop={(e) => drop(e, stage)}
-                className={`flex min-h-64 flex-col border-2 border-t-[6px] border-line ${stageAccent[stage]} ${showDrop ? "bg-subtle" : "bg-white"}`}
+                className={`flex min-h-72 flex-col rounded-xl transition-colors ${showDrop ? "bg-brand-soft ring-2 ring-brand/30" : "bg-[#eef2f7]"}`}
               >
-                <header className="border-b-2 border-line px-3 py-2">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h2 className="text-lg">{dealStageLabel[stage]}</h2>
-                    <span className="text-xs text-muted">{list.length}</span>
+                <header className="px-3 pt-3 pb-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <h2 className="flex items-center gap-2 font-sans text-sm font-semibold">
+                      <span className={`h-2 w-2 rounded-full ${stageDot[stage]}`} />
+                      {dealStageLabel[stage]}
+                    </h2>
+                    <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-muted">{list.length}</span>
                   </div>
-                  <div className="text-xs text-muted">
+                  <div className="mt-1 text-xs text-muted tabular-nums">
                     {formatEuro(sum)}
                     {isOpen(stage) && sum > 0 && <> · gewogen {formatEuro(list.reduce((s, d) => s + weighted(d), 0))}</>}
                   </div>
                 </header>
-                <ol className="flex flex-1 flex-col gap-2 p-2">
+                <ol className="flex flex-1 flex-col gap-2 px-2 pb-2">
                   {list.map((d) => (
                     <li
                       key={d.id}
@@ -139,21 +149,22 @@ export function Pipeline() {
                         if (dropTarget?.stage !== stage || dropTarget.beforeId !== beforeId) setDropTarget({ stage, beforeId });
                       }}
                       onClick={() => setDialog({ deal: d })}
-                      className={`relative cursor-grab border-2 border-line bg-white p-3 text-sm hover:border-brand ${dragId === d.id ? "opacity-40" : ""}`}
+                      className={`relative cursor-grab rounded-lg border border-line bg-white p-3 text-sm shadow-card transition-shadow hover:shadow-pop active:cursor-grabbing ${dragId === d.id ? "opacity-40" : ""}`}
                     >
                       {dragId && dropTarget?.stage === stage && dropTarget.beforeId === d.id && (
-                        <div className="absolute -top-[7px] right-0 left-0 h-[4px] bg-magenta" />
+                        <div className="absolute -top-[6px] right-1 left-1 h-[3px] rounded-full bg-magenta" />
                       )}
-                      <div className="font-bold text-ink">{d.title}</div>
-                      <div className="text-muted">{d.organizationName}</div>
+                      <div className="font-semibold text-ink">{d.title}</div>
+                      <div className="text-xs text-muted">{d.organizationName}</div>
                       <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 text-xs">
-                        <span className="font-bold text-brand">{formatEuro(d.valueCents)}</span>
-                        {isOpen(stage) && <span className="text-muted">{Math.round(d.probability * 100)}%</span>}
+                        <span className="font-semibold text-ink tabular-nums">{formatEuro(d.valueCents)}</span>
+                        {isOpen(stage) && <span className="rounded-full bg-subtle px-1.5 py-0.5 text-[11px] font-semibold text-muted">{Math.round(d.probability * 100)}%</span>}
                       </div>
                       {(d.expectedCloseDate || d.ownerName) && (
-                        <div className="mt-1 text-xs text-muted">
+                        <div className="mt-1.5 flex items-center gap-1 text-xs text-muted">
+                          {d.expectedCloseDate && <CalendarDays size={12} className="shrink-0" />}
                           {d.expectedCloseDate && (
-                            <span className={isOpen(stage) && d.expectedCloseDate < today() ? "font-bold text-magenta" : ""}>
+                            <span className={isOpen(stage) && d.expectedCloseDate < today() ? "font-semibold text-magenta" : ""}>
                               {formatDate(new Date(d.expectedCloseDate).getTime())}
                             </span>
                           )}
@@ -167,7 +178,7 @@ export function Pipeline() {
                       {stage === "lost" && d.lostReason && <div className="mt-1 text-xs text-muted italic">{d.lostReason}</div>}
                     </li>
                   ))}
-                  {showDrop && dropTarget?.beforeId === null && <li className="h-[4px] bg-magenta" />}
+                  {showDrop && dropTarget?.beforeId === null && <li className="mx-1 h-[3px] rounded-full bg-magenta" />}
                 </ol>
               </section>
             );
@@ -179,15 +190,6 @@ export function Pipeline() {
       <Dialog open={!!dialog} title={dialog?.deal ? "Kans bewerken" : "Nieuwe kans"} onClose={() => setDialog(null)}>
         {dialog && <DealForm deal={dialog.deal} onDone={() => setDialog(null)} />}
       </Dialog>
-    </div>
-  );
-}
-
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className={`border-2 border-line p-4 ${accent ? "border-l-[12px] border-l-magenta" : "border-l-[12px] border-l-cyan"}`}>
-      <div className="kicker">{label}</div>
-      <div className="mt-1 font-serif text-3xl font-semibold text-brand">{value}</div>
     </div>
   );
 }

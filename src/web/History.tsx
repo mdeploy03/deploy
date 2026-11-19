@@ -55,7 +55,7 @@ export function History({ entityType, entityId }: { entityType: EntityType; enti
 
   return (
     <div className="text-sm">
-      <button className="font-bold text-brand hover:underline" onClick={() => setOpen(!open)} aria-expanded={open}>
+      <button className="text-xs font-semibold text-muted hover:text-brand" onClick={() => setOpen(!open)} aria-expanded={open}>
         {open ? "▾" : "▸"} Geschiedenis
       </button>
       {open && (
@@ -68,7 +68,7 @@ export function History({ entityType, entityId }: { entityType: EntityType; enti
           ) : (
             <ol className="grid gap-2">
               {entries.map(({ e, lines }) => (
-                <li key={e.id} className="border-l-2 border-line pl-3">
+                <li key={e.id} className="border-l border-line pl-3">
                   <div className="text-xs text-muted">
                     {formatDateTime(e.createdAt)} · {e.userName ?? "onbekend"}
                   </div>

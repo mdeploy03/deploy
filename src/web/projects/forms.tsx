@@ -46,7 +46,7 @@ export function ProjectForm({ project, organizationId, onDone }: { project?: Pro
       <div className="grid gap-4 sm:grid-cols-2">
         {!organizationId && (
           <Field label="Klant *" error={errors.organizationId}>
-            <Select name="organizationId" defaultValue={project?.organizationId ?? ""} required>
+            <Select key={orgs.data ? "geladen" : "laden"} name="organizationId" defaultValue={project?.organizationId ?? ""} required>
               <option value="">— Kies een klant —</option>
               {orgs.data?.map((o) => (
                 <option key={o.id} value={o.id}>

@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router";
 import { PROJECT_STATUSES, projectStatusLabel } from "../../shared/projects";
 import { ProjectForm, ProjectStatusChip } from "../projects/forms";
 import { useProjects } from "../projects/hooks";
-import { Button, Dialog, Empty, ErrorText, Input, PageHeader, formatDate } from "../ui";
+import { AlertCircle, Briefcase, CalendarDays, Plus } from "lucide-react";
+import { Button, Dialog, Empty, ErrorText, PageHeader, Progress, SearchInput, Segmented, cardClass, formatDate } from "../ui";
 
 const day = (iso: string | null) => (iso ? formatDate(new Date(iso).getTime()) : null);
 
@@ -16,28 +17,22 @@ export function Projects() {
 
   return (
     <div>
-      <PageHeader kicker="Uitvoering" title="Projecten" actions={<Button onClick={() => setCreating(true)}>Nieuw project</Button>} />
+      <PageHeader kicker="Uitvoering" title="Projecten" actions={<Button icon={Plus} onClick={() => setCreating(true)}>Nieuw project</Button>} />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="w-full sm:w-80">
-          <Input type="search" placeholder="Zoek op project of klant…" value={q} onChange={(e) => setQ(e.target.value)} />
+          <SearchInput placeholder="Zoek op project of klant…" value={q} onChange={(e) => setQ(e.target.value)} />
         </div>
-        <div className="flex flex-wrap gap-2">
-          {[["", "Alle"] as const, ...PROJECT_STATUSES.map((s) => [s, projectStatusLabel[s]] as const)].map(([value, label]) => (
-            <button
-              key={value}
-              onClick={() => setStatus(value)}
-              className={`border-2 px-3 py-1 text-sm font-bold ${status === value ? "border-brand bg-brand text-white" : "border-line text-muted hover:border-brand hover:text-brand"}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          value={status}
+          onChange={setStatus}
+          options={[["", "Alle"] as const, ...PROJECT_STATUSES.map((s) => [s, projectStatusLabel[s]] as const)]}
+        />
       </div>
       <ErrorText error={query.error} />
 
       {query.data && query.data.length === 0 ? (
-        <Empty>{q || status ? "Geen projecten gevonden met deze filters." : "Nog geen projecten. Maak er een aan, of maak er een van een gewonnen kans in de pipeline."}</Empty>
+        <Empty icon={Briefcase}>{q || status ? "Geen projecten gevonden met deze filters." : "Nog geen projecten. Maak er een aan, of maak er een van een gewonnen kans in de pipeline."}</Empty>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {query.data?.map((p) => {
@@ -47,10 +42,10 @@ export function Projects() {
               <article
                 key={p.id}
                 onClick={() => navigate(`/projecten/${p.id}`)}
-                className="cursor-pointer border-2 border-l-[12px] border-line border-l-cyan bg-white p-5 hover:border-brand hover:border-l-cyan"
+                className={`${cardClass} group cursor-pointer p-5 transition-shadow hover:shadow-pop`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-xl">
+                  <h2 className="text-xl leading-tight group-hover:text-brand">
                     <Link to={`/projecten/${p.id}`} onClick={(e) => e.stopPropagation()}>
                       {p.name}
                     </Link>
@@ -59,22 +54,25 @@ export function Projects() {
                 </div>
                 <div className="mt-1 text-sm text-muted">{p.organizationName}</div>
                 {(period || p.leadName) && (
-                  <div className="mt-1 text-xs text-muted">
+                  <div className="mt-2 flex items-center gap-1.5 text-xs text-muted">
+                    <CalendarDays size={12} />
                     {period}
                     {period && p.leadName && " · "}
                     {p.leadName}
                   </div>
                 )}
-                <div className="mt-4">
-                  <div className="flex justify-between text-xs text-muted">
+                <div className="mt-5">
+                  <div className="mb-1.5 flex justify-between text-xs text-muted">
                     <span>
                       {p.doneCount}/{p.taskCount} taken klaar
                     </span>
-                    {p.overdueCount > 0 && <span className="font-bold text-magenta">{p.overdueCount} te laat</span>}
+                    {p.overdueCount > 0 && (
+                      <span className="inline-flex items-center gap-1 font-semibold text-magenta">
+                        <AlertCircle size={12} /> {p.overdueCount} te laat
+                      </span>
+                    )}
                   </div>
-                  <div className="mt-1 h-2 bg-subtle">
-                    <div className="h-2 bg-brand" style={{ width: `${pct}%` }} />
-                  </div>
+                  <Progress value={pct} />
                 </div>
               </article>
             );

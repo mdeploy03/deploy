@@ -5,7 +5,8 @@ import { useUsers } from "../crm/hooks";
 import { History } from "../History";
 import { ProjectForm, ProjectStatusChip, TaskForm, todayIso } from "../projects/forms";
 import { useDeleteProject, useMoveTask, useProject, useSaveTask, useSetMembers } from "../projects/hooks";
-import { Button, Card, Chip, Dialog, useDocumentTitle, Empty, ErrorText, Input, formatDate } from "../ui";
+import { Briefcase, ClipboardList, LayoutGrid, List, Pencil, Plus, Trash2, Users } from "lucide-react";
+import { Button, Card, Chip, DetailHeader, Dialog, useDocumentTitle, Empty, ErrorText, InfoList, Input, Progress, Segmented, formatDate } from "../ui";
 
 const day = (iso: string | null) => (iso ? formatDate(new Date(iso).getTime()) : "—");
 
@@ -34,65 +35,56 @@ export function ProjectDetail() {
 
   return (
     <div>
-      <div className="mb-8">
-        <div className="kicker border-b border-line pb-2">
-          <Link to="/projecten" className="hover:text-brand">
-            Projecten
-          </Link>{" "}
-          · {p.name}
-        </div>
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl">{p.name}</h1>
-              <ProjectStatusChip status={p.status} />
-            </div>
-            <div className="brand-bar mt-3" />
-          </div>
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => setEditing(true)}>
+      <DetailHeader
+        back={{ to: "/projecten", label: "Projecten" }}
+        title={p.name}
+        meta={<ProjectStatusChip status={p.status} />}
+        actions={
+          <>
+            <Button variant="secondary" icon={Pencil} onClick={() => setEditing(true)}>
               Bewerken
             </Button>
             <Button
               variant="danger"
+              icon={Trash2}
               disabled={del.isPending}
               onClick={() => confirm(`Project “${p.name}” met alle taken verwijderen?`) && del.mutate(p.id, { onSuccess: () => navigate("/projecten") })}
             >
               Verwijderen
             </Button>
-          </div>
-        </div>
+          </>
+        }
+      />
+      <div className="mb-4">
         <ErrorText error={del.error} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)]">
+      <div className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
         <div className="grid content-start gap-6">
-          <Card accent="brand" title="Gegevens">
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-              <dt className="text-muted">Klant</dt>
-              <dd>
-                <Link to={`/klanten/${p.organizationId}`} className="text-brand hover:underline">
-                  {p.organizationName}
-                </Link>
-              </dd>
-              {p.dealTitle && (
-                <>
-                  <dt className="text-muted">Uit kans</dt>
-                  <dd>{p.dealTitle}</dd>
-                </>
-              )}
-              <dt className="text-muted">Start</dt>
-              <dd>{day(p.startDate)}</dd>
-              <dt className="text-muted">Einde</dt>
-              <dd>{day(p.endDate)}</dd>
-              <dt className="text-muted">Projectleider</dt>
-              <dd>{p.leadName ?? "—"}</dd>
-              <dt className="text-muted">Voortgang</dt>
-              <dd>
-                {p.doneCount}/{p.taskCount} taken klaar
-                {p.overdueCount > 0 && <span className="font-bold text-magenta"> · {p.overdueCount} te laat</span>}
-              </dd>
-            </dl>
+          <Card accent="brand" icon={Briefcase} title="Gegevens">
+            <InfoList
+              items={[
+                [
+                  "Klant",
+                  <Link to={`/klanten/${p.organizationId}`} className="text-brand hover:underline">
+                    {p.organizationName}
+                  </Link>,
+                ],
+                ...(p.dealTitle ? ([["Uit kans", p.dealTitle]] as [string, string][]) : []),
+                ["Start", day(p.startDate)],
+                ["Einde", day(p.endDate)],
+                ["Projectleider", p.leadName],
+              ]}
+            />
+            <div className="mt-4">
+              <div className="mb-1.5 flex justify-between text-xs text-muted">
+                <span>
+                  {p.doneCount}/{p.taskCount} taken klaar
+                </span>
+                {p.overdueCount > 0 && <span className="font-semibold text-magenta">{p.overdueCount} te laat</span>}
+              </div>
+              <Progress value={p.taskCount ? (p.doneCount / p.taskCount) * 100 : 0} />
+            </div>
             {p.description && <p className="mt-4 border-t border-line pt-4 text-sm whitespace-pre-line">{p.description}</p>}
             <div className="mt-4 border-t border-line pt-3">
               <History entityType="project" entityId={p.id} />
@@ -103,24 +95,22 @@ export function ProjectDetail() {
 
         <Card
           accent="cyan"
+          icon={ClipboardList}
           title="Taken"
           actions={
-            <div className="flex gap-1 text-sm">
-              {(["bord", "lijst"] as const).map((v) => (
-                <button
-                  key={v}
-                  onClick={() => setView(v)}
-                  className={`border-2 px-3 py-1 font-bold ${view === v ? "border-brand bg-brand text-white" : "border-line text-muted hover:text-brand"}`}
-                >
-                  {v === "bord" ? "Bord" : "Lijst"}
-                </button>
-              ))}
-            </div>
+            <Segmented
+              value={view}
+              onChange={setView}
+              options={[
+                ["bord", <span className="inline-flex items-center gap-1.5"><LayoutGrid size={14} /> Bord</span>],
+                ["lijst", <span className="inline-flex items-center gap-1.5"><List size={14} /> Lijst</span>],
+              ] as const}
+            />
           }
         >
           <QuickAdd projectId={p.id} />
           {p.tasks.length === 0 ? (
-            <Empty>Nog geen taken. Typ hierboven een taak en druk op Enter.</Empty>
+            <Empty icon={ClipboardList}>Nog geen taken. Typ hierboven een taak en druk op Enter.</Empty>
           ) : view === "bord" ? (
             <TaskBoard projectId={p.id} tasks={p.tasks} onOpen={(task) => setTaskDialog({ task })} />
           ) : (
@@ -151,7 +141,10 @@ function QuickAdd({ projectId }: { projectId: string }) {
         save.mutate({ data: { title } }, { onSuccess: () => setTitle("") });
       }}
     >
-      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="+ Nieuwe taak (Enter om toe te voegen)" disabled={save.isPending} />
+      <div className="relative">
+        <Plus size={16} className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-label" />
+        <Input className="pl-9" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nieuwe taak — Enter om toe te voegen" disabled={save.isPending} />
+      </div>
       <ErrorText error={save.error} />
     </form>
   );
@@ -162,7 +155,7 @@ function TaskMeta({ t }: { t: TaskListItem }) {
   return (
     <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
       {t.priority === "high" && <Chip tone="magenta">{taskPriorityLabel.high}</Chip>}
-      {t.dueDate && <span className={overdue ? "font-bold text-magenta" : ""}>{day(t.dueDate)}</span>}
+      {t.dueDate && <span className={overdue ? "font-semibold text-magenta" : ""}>{day(t.dueDate)}</span>}
       {t.assigneeName && <span>{t.assigneeName}</span>}
     </div>
   );
@@ -200,13 +193,13 @@ function TaskBoard({ projectId, tasks, onOpen }: { projectId: string; tasks: Tas
                 setTarget(null);
                 if (id && id !== beforeId) move.mutate({ id, move: { status, beforeId } });
               }}
-              className={`min-h-40 border-2 border-line ${dragId && target?.status === status ? "bg-subtle" : "bg-white"}`}
+              className={`min-h-48 rounded-xl transition-colors ${dragId && target?.status === status ? "bg-brand-soft ring-2 ring-brand/30" : "bg-[#eef2f7]"}`}
             >
-              <header className="flex items-baseline justify-between border-b-2 border-line px-3 py-2">
-                <h3 className="text-lg">{taskStatusLabel[status]}</h3>
-                <span className="text-xs text-muted">{list.length}</span>
+              <header className="flex items-center justify-between px-3 pt-3 pb-2">
+                <h3 className="font-sans text-sm font-semibold">{taskStatusLabel[status]}</h3>
+                <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-muted">{list.length}</span>
               </header>
-              <ol className="flex flex-col gap-2 p-2">
+              <ol className="flex flex-col gap-2 px-2 pb-2">
                 {list.map((t, idx) => (
                   <li
                     key={t.id}
@@ -227,16 +220,16 @@ function TaskBoard({ projectId, tasks, onOpen }: { projectId: string; tasks: Tas
                       if (target?.status !== status || target.beforeId !== beforeId) setTarget({ status, beforeId });
                     }}
                     onClick={() => onOpen(t)}
-                    className={`relative cursor-grab border-2 border-line bg-white p-3 text-sm hover:border-brand ${dragId === t.id ? "opacity-40" : ""}`}
+                    className={`relative cursor-grab rounded-lg border border-line bg-white p-3 text-sm shadow-card transition-shadow hover:shadow-pop active:cursor-grabbing ${dragId === t.id ? "opacity-40" : ""}`}
                   >
                     {dragId && target?.status === status && target.beforeId === t.id && (
-                      <div className="absolute -top-[7px] right-0 left-0 h-[4px] bg-magenta" />
+                      <div className="absolute -top-[6px] right-1 left-1 h-[3px] rounded-full bg-magenta" />
                     )}
-                    <div className={`font-bold ${status === "done" ? "text-muted line-through" : "text-ink"}`}>{t.title}</div>
+                    <div className={`font-semibold ${status === "done" ? "text-muted line-through" : "text-ink"}`}>{t.title}</div>
                     <TaskMeta t={t} />
                   </li>
                 ))}
-                {dragId && target?.status === status && target.beforeId === null && <li className="h-[4px] bg-magenta" />}
+                {dragId && target?.status === status && target.beforeId === null && <li className="mx-1 h-[3px] rounded-full bg-magenta" />}
               </ol>
             </section>
           );
@@ -255,7 +248,7 @@ function TaskList({ projectId, tasks, onOpen }: { projectId: string; tasks: Task
       a.position - b.position,
   );
   return (
-    <ul className="divide-y divide-line border-2 border-line">
+    <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line">
       {sorted.map((t) => (
         <li key={t.id} className="flex items-start gap-3 px-3 py-2 hover:bg-subtle">
           <input
@@ -266,7 +259,7 @@ function TaskList({ projectId, tasks, onOpen }: { projectId: string; tasks: Task
             onChange={(e) => save.mutate({ id: t.id, data: { status: e.target.checked ? "done" : "todo" } })}
           />
           <button className="min-w-0 flex-1 text-left text-sm" onClick={() => onOpen(t)}>
-            <span className={`font-bold ${t.status === "done" ? "text-muted line-through" : "text-ink"}`}>{t.title}</span>
+            <span className={`font-semibold ${t.status === "done" ? "text-muted line-through" : "text-ink"}`}>{t.title}</span>
             {t.status === "doing" && <span className="ml-2 text-xs text-brand">Bezig</span>}
             <TaskMeta t={t} />
           </button>
@@ -281,13 +274,13 @@ function Members({ projectId, memberIds, names }: { projectId: string; memberIds
   const setMembers = useSetMembers(projectId);
   if (!users.data?.length) {
     return (
-      <Card accent="magenta" title="Team">
+      <Card accent="magenta" icon={Users} title="Team">
         <p className="text-sm text-muted">Teamleden kun je toevoegen zodra collega's inloggen met Microsoft 365.</p>
       </Card>
     );
   }
   return (
-    <Card accent="magenta" title="Team">
+    <Card accent="magenta" icon={Users} title="Team">
       {names.length > 0 && <p className="mb-3 text-sm">{names.join(", ")}</p>}
       <div className="grid gap-1 text-sm">
         {users.data.map((u) => (

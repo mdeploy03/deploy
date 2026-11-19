@@ -9,7 +9,8 @@ import { dealStageLabel, formatEuro, type DealListItem } from "../../shared/deal
 import { useAddActivity, useDeleteActivity, useDeleteOrganization, useOrganization } from "../crm/hooks";
 import { StatusChip } from "../crm/StatusChip";
 import { History } from "../History";
-import { Button, Card, Chip, Dialog, useDocumentTitle, Empty, ErrorText, Field, Input, Select, Textarea, formatDateTime } from "../ui";
+import { Briefcase, Building2, ExternalLink, Mail, MessageSquareText, Pencil, Phone, Plus, Target, Trash2, Users } from "lucide-react";
+import { Button, Card, Chip, DetailHeader, Dialog, useDocumentTitle, Empty, ErrorText, Field, InfoList, Input, Select, Textarea, formatDateTime } from "../ui";
 
 export function CustomerDetail() {
   const { id = "" } = useParams();
@@ -39,27 +40,18 @@ export function CustomerDetail() {
 
   return (
     <div>
-      <div className="mb-8">
-        <div className="kicker border-b border-line pb-2">
-          <Link to="/klanten" className="hover:text-brand">
-            Klanten
-          </Link>{" "}
-          · {org.name}
-        </div>
-        <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-4xl">{org.name}</h1>
-              <StatusChip status={org.status} />
-            </div>
-            <div className="brand-bar mt-3" />
-          </div>
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={() => setEditing(true)}>
+      <DetailHeader
+        back={{ to: "/klanten", label: "Klanten" }}
+        title={org.name}
+        meta={<StatusChip status={org.status} />}
+        actions={
+          <>
+            <Button variant="secondary" icon={Pencil} onClick={() => setEditing(true)}>
               Bewerken
             </Button>
             <Button
               variant="danger"
+              icon={Trash2}
               disabled={del.isPending}
               onClick={() => {
                 if (confirm(`“${org.name}” verwijderen? De tijdlijn wordt ook verwijderd; contactpersonen blijven bestaan zonder klant.`)) {
@@ -69,34 +61,32 @@ export function CustomerDetail() {
             >
               Verwijderen
             </Button>
-          </div>
-        </div>
+          </>
+        }
+      />
+      <div className="mb-4">
         <ErrorText error={del.error} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <div className="grid content-start gap-6">
-          <Card accent="brand" title="Gegevens">
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
-              <dt className="text-muted">KvK</dt>
-              <dd>{org.kvk ?? "—"}</dd>
-              <dt className="text-muted">Sector</dt>
-              <dd>{org.sector ?? "—"}</dd>
-              <dt className="text-muted">Website</dt>
-              <dd className="break-all">
-                {website ? (
-                  <a href={website} target="_blank" rel="noreferrer" className="text-brand hover:underline">
-                    {org.website}
-                  </a>
-                ) : (
-                  "—"
-                )}
-              </dd>
-              <dt className="text-muted">Adres</dt>
-              <dd className="whitespace-pre-line">{org.address ?? "—"}</dd>
-              <dt className="text-muted">Accountmanager</dt>
-              <dd>{org.accountManagerName ?? "—"}</dd>
-            </dl>
+          <Card accent="brand" icon={Building2} title="Gegevens">
+            <InfoList
+              items={[
+                ["KvK", org.kvk],
+                ["Sector", org.sector],
+                [
+                  "Website",
+                  website ? (
+                    <a href={website} target="_blank" rel="noreferrer" className="break-all text-brand hover:underline">
+                      {org.website}
+                    </a>
+                  ) : null,
+                ],
+                ["Adres", org.address ? <span className="whitespace-pre-line">{org.address}</span> : null],
+                ["Accountmanager", org.accountManagerName],
+              ]}
+            />
             <div className="mt-4 border-t border-line pt-3">
               <History entityType="organization" entityId={org.id} />
             </div>
@@ -104,10 +94,11 @@ export function CustomerDetail() {
 
           <Card
             accent="cyan"
+            icon={Users}
             title={`Contactpersonen (${org.contacts.length})`}
             actions={
-              <Button variant="link" onClick={() => setContactDialog({})}>
-                + Toevoegen
+              <Button variant="ghost" icon={Plus} onClick={() => setContactDialog({})}>
+                Toevoegen
               </Button>
             }
           >
@@ -118,29 +109,27 @@ export function CustomerDetail() {
                 {org.contacts.map((c) => (
                   <li key={c.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
                     <div className="min-w-0 text-sm">
-                      <div className="font-bold text-ink">{contactName(c)}</div>
+                      <div className="font-semibold text-ink">{contactName(c)}</div>
                       {c.jobTitle && <div className="text-muted">{c.jobTitle}</div>}
                       <div className="mt-1 flex flex-wrap gap-x-3">
                         {c.email && (
-                          <a href={`mailto:${c.email}`} className="break-all text-brand hover:underline">
-                            {c.email}
+                          <a href={`mailto:${c.email}`} className="inline-flex items-center gap-1 break-all text-brand hover:underline">
+                            <Mail size={13} /> {c.email}
                           </a>
                         )}
                         {c.phone && (
-                          <a href={`tel:${c.phone}`} className="text-brand hover:underline">
-                            {c.phone}
+                          <a href={`tel:${c.phone}`} className="inline-flex items-center gap-1 text-brand hover:underline">
+                            <Phone size={13} /> {c.phone}
                           </a>
                         )}
                         {c.linkedin && (
-                          <a href={c.linkedin} target="_blank" rel="noreferrer" className="text-brand hover:underline">
-                            LinkedIn
+                          <a href={c.linkedin} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-brand hover:underline">
+                            <ExternalLink size={13} /> LinkedIn
                           </a>
                         )}
                       </div>
                     </div>
-                    <Button variant="link" onClick={() => setContactDialog({ contact: c })}>
-                      Bewerken
-                    </Button>
+                    <Button variant="ghost" icon={Pencil} aria-label="Bewerken" title="Bewerken" onClick={() => setContactDialog({ contact: c })} />
                   </li>
                 ))}
               </ul>
@@ -151,10 +140,11 @@ export function CustomerDetail() {
         <div className="grid content-start gap-6">
         <Card
           accent="brand"
+          icon={Target}
           title={`Kansen (${org.deals.length})`}
           actions={
-            <Button variant="link" onClick={() => setDealDialog({})}>
-              + Nieuwe kans
+            <Button variant="ghost" icon={Plus} onClick={() => setDealDialog({})}>
+              Nieuwe kans
             </Button>
           }
         >
@@ -165,16 +155,16 @@ export function CustomerDetail() {
               {org.deals.map((d) => (
                 <li key={d.id}>
                   <button
-                    className="flex w-full items-center justify-between gap-3 py-2 text-left text-sm hover:bg-subtle"
+                    className="-mx-2 flex w-[calc(100%+1rem)] items-center justify-between gap-3 rounded-lg px-2 py-2 text-left text-sm hover:bg-subtle"
                     onClick={() => setDealDialog({ deal: d })}
                   >
                     <span className="min-w-0">
-                      <span className="block font-bold text-ink">{d.title}</span>
+                      <span className="block font-semibold text-ink">{d.title}</span>
                       <span className="text-muted">{d.contactName ?? ""}</span>
                     </span>
                     <span className="flex shrink-0 items-center gap-2">
-                      <span className="font-bold text-brand">{formatEuro(d.valueCents)}</span>
-                      <Chip tone={d.stage === "won" ? "brand" : d.stage === "lost" ? "muted" : "magenta"}>{dealStageLabel[d.stage]}</Chip>
+                      <span className="font-semibold text-ink tabular-nums">{formatEuro(d.valueCents)}</span>
+                      <Chip tone={d.stage === "won" ? "brand" : d.stage === "lost" ? "muted" : "cyan"}>{dealStageLabel[d.stage]}</Chip>
                     </span>
                   </button>
                 </li>
@@ -185,10 +175,11 @@ export function CustomerDetail() {
 
         <Card
           accent="cyan"
+          icon={Briefcase}
           title={`Projecten (${org.projects.length})`}
           actions={
-            <Button variant="link" onClick={() => setNewProject(true)}>
-              + Nieuw project
+            <Button variant="ghost" icon={Plus} onClick={() => setNewProject(true)}>
+              Nieuw project
             </Button>
           }
         >
@@ -198,7 +189,7 @@ export function CustomerDetail() {
             <ul className="divide-y divide-line">
               {org.projects.map((pr) => (
                 <li key={pr.id} className="flex items-center justify-between gap-3 py-2 text-sm">
-                  <Link to={`/projecten/${pr.id}`} className="font-bold text-brand hover:underline">
+                  <Link to={`/projecten/${pr.id}`} className="font-semibold text-ink hover:text-brand">
                     {pr.name}
                   </Link>
                   <ProjectStatusChip status={pr.status} />
@@ -208,7 +199,7 @@ export function CustomerDetail() {
           )}
         </Card>
 
-        <Card accent="magenta" title="Tijdlijn">
+        <Card accent="magenta" icon={MessageSquareText} title="Tijdlijn">
           <ActivityForm organizationId={org.id} contacts={org.contacts} />
           <Timeline organizationId={org.id} activities={org.activities} />
         </Card>
@@ -252,7 +243,7 @@ function ActivityForm({ organizationId, contacts }: { organizationId: string; co
 
   return (
     <form
-      className="mb-6 grid gap-3 border-b-2 border-line pb-6"
+      className="mb-6 grid gap-3 rounded-xl bg-subtle/70 p-4 ring-1 ring-line ring-inset"
       onSubmit={(e) => {
         e.preventDefault();
         add.mutate(
@@ -272,7 +263,7 @@ function ActivityForm({ organizationId, contacts }: { organizationId: string; co
             key={t}
             type="button"
             onClick={() => setType(t)}
-            className={`border-2 px-3 py-1 text-sm font-bold ${type === t ? "border-magenta text-magenta" : "border-line text-muted hover:text-brand"}`}
+            className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${type === t ? "bg-magenta text-white" : "bg-white text-muted ring-1 ring-line ring-inset hover:text-ink"}`}
           >
             {activityTypeLabel[t]}
           </button>
@@ -319,16 +310,16 @@ function Timeline({ organizationId, activities }: { organizationId: string; acti
   const del = useDeleteActivity(organizationId);
   if (activities.length === 0) return <Empty>Nog niets op de tijdlijn.</Empty>;
   return (
-    <ol className="grid gap-5">
+    <ol className="ml-1 grid gap-4">
       {activities.map((a) => (
-        <li key={a.id} className="border-l-2 border-cyan pl-4">
+        <li key={a.id} className="relative border-l border-line pb-1 pl-5 before:absolute before:top-1 before:-left-[5px] before:h-2.5 before:w-2.5 before:rounded-full before:bg-cyan before:ring-4 before:ring-white">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
             <Chip tone={typeTone[a.type]}>{activityTypeLabel[a.type]}</Chip>
             <span>{formatDateTime(a.occurredAt)}</span>
             {a.contactName && <span>· met {a.contactName}</span>}
             {a.authorName && <span>· door {a.authorName}</span>}
             <button
-              className="ml-auto text-muted hover:text-magenta"
+              className="ml-auto rounded-md px-1.5 py-0.5 text-label hover:bg-magenta-soft hover:text-magenta"
               onClick={() => confirm("Dit item van de tijdlijn verwijderen?") && del.mutate(a.id)}
             >
               Verwijderen

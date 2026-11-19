@@ -1,48 +1,70 @@
 @import "tailwindcss";
 
-/* DEPLOY huisstijl: wit-eerst, dunne lijnen, serif-koppen, geen afronding of schaduw. */
+/*
+ * DEPLOY Werkruimte — moderne variant van de huisstijl.
+ * Kleuren en serif-koppen uit het brandbook; daarnaast lichte achtergrond,
+ * dunne lijnen, kleine afronding en zachte schaduw (akkoord eigenaar, nov 2026).
+ */
 @theme {
   --color-brand: #265b93;
+  --color-brand-dark: #1d4775;
+  --color-brand-soft: #e9f0f8;
   --color-cyan: #29c5dc;
+  --color-cyan-soft: #e3f7fa;
   --color-magenta: #ae5399;
+  --color-magenta-soft: #f7ebf4;
   --color-ink: #1f3350;
   --color-muted: #5c6b7e;
-  --color-label: #7f7f7f;
-  --color-line: #d8d8d8;
-  --color-subtle: #f4f7fa;
+  --color-label: #7f8a99;
+  --color-line: #e3e8ef;
+  --color-subtle: #f6f8fb;
 
   --font-serif: "Crimson Text", "EB Garamond", Georgia, serif;
-  --font-sans: Carlito, Calibri, "Segoe UI", Arial, sans-serif;
+  --font-sans: Inter, Carlito, Calibri, "Segoe UI", Arial, sans-serif;
 
-  --radius-*: initial;
-  --shadow-*: initial;
+  --shadow-card: 0 1px 2px rgb(31 51 80 / 0.04), 0 1px 3px rgb(31 51 80 / 0.06);
+  --shadow-pop: 0 10px 30px rgb(31 51 80 / 0.12), 0 2px 6px rgb(31 51 80 / 0.06);
 }
 
-html,
-body {
-  background: #ffffff;
-  color: var(--color-ink);
-  font-family: var(--font-sans);
+/* In de base-laag, zodat losse klassen (bijv. font-sans op een kop) voorgaan. */
+@layer base {
+  html,
+  body {
+    background: var(--color-subtle);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    color: var(--color-ink);
+    letter-spacing: -0.005em;
+  }
 }
 
-h1,
-h2,
-h3 {
-  font-family: var(--font-serif);
-  font-weight: 600;
-  color: var(--color-brand);
-}
-
-/* Scheidingsbalk onder een kop: helft cyaan, helft magenta. */
+/* Kleine DEPLOY-accentlijn onder paginatitels: cyaan en magenta. */
 .brand-bar {
-  width: 140px;
-  height: 6px;
+  width: 56px;
+  height: 3px;
+  border-radius: 2px;
   background: linear-gradient(to right, var(--color-cyan) 50%, var(--color-magenta) 50%);
 }
 
 .kicker {
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  font-size: 0.6875rem;
+  font-weight: 600;
   color: var(--color-label);
+}
+
+/* Dunne, rustige scrollbalken (o.a. bij de borden). */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cdd5df transparent;
 }

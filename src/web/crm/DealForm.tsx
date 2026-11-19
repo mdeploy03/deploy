@@ -84,7 +84,7 @@ export function DealForm({ deal, organizationId, onDone }: Props) {
           </Field>
         )}
         <Field label="Contactpersoon" error={errors.contactId}>
-          <Select name="contactId" key={orgId} defaultValue={deal?.organizationId === orgId ? (deal?.contactId ?? "") : ""} disabled={!orgId}>
+          <Select name="contactId" key={`${orgId}-${contacts.data ? "geladen" : "laden"}`} defaultValue={deal?.organizationId === orgId ? (deal?.contactId ?? "") : ""} disabled={!orgId}>
             <option value="">— Geen —</option>
             {contacts.data?.map((c) => (
               <option key={c.id} value={c.id}>
@@ -142,9 +142,9 @@ export function DealForm({ deal, organizationId, onDone }: Props) {
       )}
 
       {deal?.stage === "won" && (
-        <div className="border-2 border-line bg-subtle p-4 text-sm">
+        <div className="rounded-xl bg-brand-soft p-4 text-sm">
           {deal.projectId || createProject.data ? (
-            <Link to={`/projecten/${deal.projectId ?? createProject.data?.id}`} className="font-bold text-brand hover:underline">
+            <Link to={`/projecten/${deal.projectId ?? createProject.data?.id}`} className="font-semibold text-brand hover:underline">
               {createProject.data ? "Project aangemaakt — openen →" : "Naar het project →"}
             </Link>
           ) : (
