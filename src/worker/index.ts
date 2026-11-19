@@ -6,6 +6,7 @@ import { sql } from "drizzle-orm";
 import { getDb } from "./db";
 import { contactRoutes } from "./routes/contacts";
 import { dealRoutes } from "./routes/deals";
+import { projectRoutes, taskRoutes } from "./routes/projects";
 import { organizationRoutes } from "./routes/organizations";
 import { userRoutes } from "./routes/users";
 import type { AppEnv } from "./types";
@@ -49,6 +50,8 @@ api.get("/health", async (c) => {
 api.route("/organizations", organizationRoutes);
 api.route("/contacts", contactRoutes);
 api.route("/deals", dealRoutes);
+api.route("/projects", projectRoutes);
+api.route("/tasks", taskRoutes);
 api.route("/users", userRoutes);
 
 app.route("/api", api);

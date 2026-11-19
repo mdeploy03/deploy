@@ -4,6 +4,7 @@ import { ACTIVITY_TYPES, activityTypeLabel, contactName, type ActivityType, type
 import { ApiError } from "../api";
 import { ContactForm, OrganizationForm } from "../crm/forms";
 import { DealForm } from "../crm/DealForm";
+import { ProjectForm, ProjectStatusChip } from "../projects/forms";
 import { dealStageLabel, formatEuro, type DealListItem } from "../../shared/deals";
 import { useAddActivity, useDeleteActivity, useDeleteOrganization, useOrganization } from "../crm/hooks";
 import { StatusChip } from "../crm/StatusChip";
@@ -17,6 +18,7 @@ export function CustomerDetail() {
   const [editing, setEditing] = useState(false);
   const [contactDialog, setContactDialog] = useState<{ contact?: Contact } | null>(null);
   const [dealDialog, setDealDialog] = useState<{ deal?: DealListItem } | null>(null);
+  const [newProject, setNewProject] = useState(false);
 
   if (query.isPending) return <p className="text-muted">Laden…</p>;
   if (query.error) {
@@ -176,6 +178,31 @@ export function CustomerDetail() {
           )}
         </Card>
 
+        <Card
+          accent="cyan"
+          title={`Projecten (${org.projects.length})`}
+          actions={
+            <Button variant="link" onClick={() => setNewProject(true)}>
+              + Nieuw project
+            </Button>
+          }
+        >
+          {org.projects.length === 0 ? (
+            <p className="text-sm text-muted">Nog geen projecten voor deze klant.</p>
+          ) : (
+            <ul className="divide-y divide-line">
+              {org.projects.map((pr) => (
+                <li key={pr.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                  <Link to={`/projecten/${pr.id}`} className="font-bold text-brand hover:underline">
+                    {pr.name}
+                  </Link>
+                  <ProjectStatusChip status={pr.status} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
         <Card accent="magenta" title="Tijdlijn">
           <ActivityForm organizationId={org.id} contacts={org.contacts} />
           <Timeline organizationId={org.id} activities={org.activities} />
@@ -185,6 +212,9 @@ export function CustomerDetail() {
 
       <Dialog open={!!dealDialog} title={dealDialog?.deal ? "Kans bewerken" : "Nieuwe kans"} onClose={() => setDealDialog(null)}>
         {dealDialog && <DealForm deal={dealDialog.deal} organizationId={org.id} onDone={() => setDealDialog(null)} />}
+      </Dialog>
+      <Dialog open={newProject} title="Nieuw project" onClose={() => setNewProject(false)}>
+        {newProject && <ProjectForm organizationId={org.id} onDone={(pr) => navigate(`/projecten/${pr.id}`)} />}
       </Dialog>
       <Dialog open={editing} title="Klant bewerken" onClose={() => setEditing(false)}>
         <OrganizationForm org={org} onDone={() => setEditing(false)} />

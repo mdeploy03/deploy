@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { DealListItem } from "./deals";
+import type { ProjectStatus } from "./projects";
 
 // Gedeeld tussen API (validatie) en app (formulieren, labels).
 
@@ -132,6 +133,7 @@ export type OrganizationDetail = Organization & {
   contacts: Contact[];
   activities: Activity[];
   deals: DealListItem[];
+  projects: { id: string; name: string; status: ProjectStatus; startDate: string | null; endDate: string | null }[];
 };
 
 export function contactName(c: { firstName: string; lastName: string | null }) {
