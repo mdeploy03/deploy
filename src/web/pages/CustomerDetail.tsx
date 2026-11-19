@@ -8,7 +8,8 @@ import { ProjectForm, ProjectStatusChip } from "../projects/forms";
 import { dealStageLabel, formatEuro, type DealListItem } from "../../shared/deals";
 import { useAddActivity, useDeleteActivity, useDeleteOrganization, useOrganization } from "../crm/hooks";
 import { StatusChip } from "../crm/StatusChip";
-import { Button, Card, Chip, Dialog, Empty, ErrorText, Field, Input, Select, Textarea, formatDateTime } from "../ui";
+import { History } from "../History";
+import { Button, Card, Chip, Dialog, useDocumentTitle, Empty, ErrorText, Field, Input, Select, Textarea, formatDateTime } from "../ui";
 
 export function CustomerDetail() {
   const { id = "" } = useParams();
@@ -20,6 +21,7 @@ export function CustomerDetail() {
   const [dealDialog, setDealDialog] = useState<{ deal?: DealListItem } | null>(null);
   const [newProject, setNewProject] = useState(false);
 
+  useDocumentTitle(query.data?.name);
   if (query.isPending) return <p className="text-muted">Laden…</p>;
   if (query.error) {
     return (
@@ -95,6 +97,9 @@ export function CustomerDetail() {
               <dt className="text-muted">Accountmanager</dt>
               <dd>{org.accountManagerName ?? "—"}</dd>
             </dl>
+            <div className="mt-4 border-t border-line pt-3">
+              <History entityType="organization" entityId={org.id} />
+            </div>
           </Card>
 
           <Card

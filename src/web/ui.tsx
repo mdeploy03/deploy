@@ -1,6 +1,14 @@
 import { useEffect, useRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 
+/** Titel in het browsertabblad. */
+export function useDocumentTitle(title: string | undefined) {
+  useEffect(() => {
+    document.title = title ? `${title} · DEPLOY Werkruimte` : "DEPLOY Werkruimte";
+  }, [title]);
+}
+
 export function PageHeader({ kicker, title, actions }: { kicker: string; title: string; actions?: ReactNode }) {
+  useDocumentTitle(title);
   return (
     <div className="mb-8">
       <div className="kicker border-b border-line pb-2">{kicker}</div>

@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./styles.css";
 import { Layout } from "./Layout";
 import { Dashboard } from "./pages/Dashboard";
-import { Placeholder } from "./pages/Placeholder";
+import { ErrorPage, NotFound } from "./pages/Placeholder";
 import { Customers } from "./pages/Customers";
 import { CustomerDetail } from "./pages/CustomerDetail";
 import { Pipeline } from "./pages/Pipeline";
@@ -17,6 +17,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Dashboard /> },
       { path: "klanten", element: <Customers /> },
@@ -25,7 +26,7 @@ const router = createBrowserRouter([
       { path: "projecten", element: <Projects /> },
       { path: "projecten/:id", element: <ProjectDetail /> },
       { path: "mijn-werk", element: <MyWork /> },
-      { path: "*", element: <Placeholder title="Pagina niet gevonden" /> },
+      { path: "*", element: <NotFound /> },
     ],
   },
 ]);

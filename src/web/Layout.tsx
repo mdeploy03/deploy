@@ -17,7 +17,7 @@ export function Layout() {
             <span className="font-serif text-2xl font-semibold tracking-wide text-brand">DEPLOY</span>
             <span className="kicker">Werkruimte</span>
           </a>
-          <nav className="flex flex-wrap gap-1 text-sm">
+          <nav className="-mx-4 flex w-[calc(100%+2rem)] gap-1 overflow-x-auto px-4 text-sm whitespace-nowrap sm:mx-0 sm:w-auto sm:px-0">
             {nav.map((item) => (
               <NavLink
                 key={item.to}

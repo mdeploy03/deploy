@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { contactName } from "../../shared/crm";
 import { DEAL_STAGES, dealStageLabel, defaultProbability, formatEuro, parseEuro, type DealListItem, type DealStage } from "../../shared/deals";
 import { ApiError } from "../api";
+import { History } from "../History";
 import { Button, ErrorText, Field, Input, Select, Textarea } from "../ui";
 import { useCreateProject, useDeleteDeal, useOrgContacts, useSaveDeal } from "./dealHooks";
 import { useOrganizations, useUsers } from "./hooks";
@@ -160,6 +161,7 @@ export function DealForm({ deal, organizationId, onDone }: Props) {
 
       {!(save.error instanceof ApiError && Object.keys(save.error.fields).length) && <ErrorText error={save.error} />}
       <ErrorText error={remove.error} />
+      {deal && <History entityType="deal" entityId={deal.id} />}
       <div className="flex justify-between gap-2">
         {deal ? (
           <Button

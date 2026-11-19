@@ -17,13 +17,13 @@ import { deals, organizations, projectMembers, projects, tasks, users } from "..
 import { audit, diff } from "../lib/audit";
 import { jsonBody, likePattern } from "../lib/http";
 import { positionBefore } from "../lib/position";
+import { nlDate as today } from "../lib/dates";
 import type { AppEnv } from "../types";
 
 export const projectRoutes = new Hono<AppEnv>();
 export const taskRoutes = new Hono<AppEnv>();
 
 const invalid = (fields: Record<string, string>) => ({ error: "Controleer de invoer", fields });
-const today = () => new Date().toISOString().slice(0, 10);
 
 async function missingRefs(db: Db, data: { organizationId?: string; leadId?: string | null; assigneeId?: string | null }) {
   const fields: Record<string, string> = {};

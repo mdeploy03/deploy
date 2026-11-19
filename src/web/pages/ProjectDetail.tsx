@@ -2,9 +2,10 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { TASK_STATUSES, taskPriorityLabel, taskStatusLabel, type TaskListItem, type TaskStatus } from "../../shared/projects";
 import { useUsers } from "../crm/hooks";
+import { History } from "../History";
 import { ProjectForm, ProjectStatusChip, TaskForm, todayIso } from "../projects/forms";
 import { useDeleteProject, useMoveTask, useProject, useSaveTask, useSetMembers } from "../projects/hooks";
-import { Button, Card, Chip, Dialog, Empty, ErrorText, Input, formatDate } from "../ui";
+import { Button, Card, Chip, Dialog, useDocumentTitle, Empty, ErrorText, Input, formatDate } from "../ui";
 
 const day = (iso: string | null) => (iso ? formatDate(new Date(iso).getTime()) : "—");
 
@@ -17,6 +18,7 @@ export function ProjectDetail() {
   const [taskDialog, setTaskDialog] = useState<{ task?: TaskListItem } | null>(null);
   const [view, setView] = useState<"bord" | "lijst">("bord");
 
+  useDocumentTitle(query.data?.name);
   if (query.isPending) return <p className="text-muted">Laden…</p>;
   if (query.error) {
     return (
@@ -92,6 +94,9 @@ export function ProjectDetail() {
               </dd>
             </dl>
             {p.description && <p className="mt-4 border-t border-line pt-4 text-sm whitespace-pre-line">{p.description}</p>}
+            <div className="mt-4 border-t border-line pt-3">
+              <History entityType="project" entityId={p.id} />
+            </div>
           </Card>
           <Members projectId={p.id} memberIds={p.members.map((m) => m.id)} names={p.members.map((m) => m.name)} />
         </div>

@@ -1,6 +1,7 @@
 import type { FormEvent } from "react";
 import { ORG_STATUSES, orgStatusLabel, type Contact, type Organization } from "../../shared/crm";
 import { ApiError } from "../api";
+import { History } from "../History";
 import { Button, ErrorText, Field, Input, Select, Textarea } from "../ui";
 import { useDeleteContact, useOrganizations, useSaveContact, useSaveOrganization, useUsers } from "./hooks";
 
@@ -157,6 +158,7 @@ export function ContactForm({
       </Field>
       {!(save.error instanceof ApiError && Object.keys(errors).length) && <ErrorText error={save.error} />}
       <ErrorText error={remove.error} />
+      {contact && <History entityType="contact" entityId={contact.id} />}
       <div className="flex justify-between gap-2">
         {contact ? (
           <Button
