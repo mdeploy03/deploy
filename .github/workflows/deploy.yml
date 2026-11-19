@@ -64,7 +64,11 @@ jobs:
         run: bash scripts/ci-run.sh npx wrangler d1 migrations apply DB --remote --env "${{ inputs.environment }}" --config wrangler.jsonc
 
       - name: Deploy Worker
-        run: bash scripts/ci-run.sh npx wrangler deploy
+        run: |
+          set -o pipefail
+          bash scripts/ci-run.sh npx wrangler deploy | tee deploy.log
+          url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1 || true)
+          [ -n "$url" ] && echo "::notice title=Adres ${{ inputs.environment }}::$url" || true
 
       - name: Tijdelijk wachtwoord instellen
         run: printf '%s' "$BASIC_AUTH_PASSWORD" | npx wrangler secret put BASIC_AUTH_PASSWORD --name "${{ inputs.worker }}"
