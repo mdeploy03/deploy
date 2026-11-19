@@ -6,6 +6,8 @@ import "./styles.css";
 import { Layout } from "./Layout";
 import { Dashboard } from "./pages/Dashboard";
 import { Placeholder } from "./pages/Placeholder";
+import { Customers } from "./pages/Customers";
+import { CustomerDetail } from "./pages/CustomerDetail";
 
 const router = createBrowserRouter([
   {
@@ -13,7 +15,8 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Dashboard /> },
-      { path: "klanten", element: <Placeholder title="Klanten" step="stap 3" /> },
+      { path: "klanten", element: <Customers /> },
+      { path: "klanten/:id", element: <CustomerDetail /> },
       { path: "pipeline", element: <Placeholder title="Pipeline" step="stap 4" /> },
       { path: "projecten", element: <Placeholder title="Projecten" step="stap 5" /> },
       { path: "mijn-werk", element: <Placeholder title="Mijn werk" step="stap 5" /> },

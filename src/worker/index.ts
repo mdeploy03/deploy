@@ -1,18 +1,17 @@
 import { Hono } from "hono";
 import { basicAuth } from "hono/basic-auth";
 import { secureHeaders } from "hono/secure-headers";
+import { HTTPException } from "hono/http-exception";
 import { sql } from "drizzle-orm";
 import { getDb } from "./db";
+import { contactRoutes } from "./routes/contacts";
+import { organizationRoutes } from "./routes/organizations";
+import { userRoutes } from "./routes/users";
+import type { AppEnv } from "./types";
 
-export type Env = {
-  DB: D1Database;
-  ASSETS: Fetcher;
-  ENVIRONMENT: "local" | "staging" | "production";
-  /** Tijdelijke afscherming tot de Microsoft-login er is (wrangler secret). */
-  BASIC_AUTH_PASSWORD?: string;
-};
+export type { Env } from "./types";
 
-const app = new Hono<{ Bindings: Env }>();
+const app = new Hono<AppEnv>();
 
 app.use("*", secureHeaders());
 
@@ -27,7 +26,13 @@ app.use("*", async (c, next) => {
   return basicAuth({ username: "deploy", password, realm: "DEPLOY Werkruimte" })(c, next);
 });
 
-const api = new Hono<{ Bindings: Env }>();
+// Tot de Microsoft-login er is, is er geen ingelogde gebruiker.
+app.use("/api/*", async (c, next) => {
+  c.set("userId", null);
+  await next();
+});
+
+const api = new Hono<AppEnv>();
 
 api.get("/health", async (c) => {
   let db = false;
@@ -40,9 +45,19 @@ api.get("/health", async (c) => {
   return c.json({ ok: db, environment: c.env.ENVIRONMENT, db }, db ? 200 : 503);
 });
 
+api.route("/organizations", organizationRoutes);
+api.route("/contacts", contactRoutes);
+api.route("/users", userRoutes);
+
 app.route("/api", api);
 // Onbekende API-routes nooit naar de React-app laten doorvallen.
 app.all("/api/*", (c) => c.json({ error: "Niet gevonden" }, 404));
+
+app.onError((err, c) => {
+  if (err instanceof HTTPException) return err.getResponse();
+  console.error(err);
+  return c.json({ error: "Er ging iets mis op de server" }, 500);
+});
 
 // Alles buiten /api: de React-app (statische bestanden, SPA-fallback).
 // Kopie van de response, zodat middleware (secureHeaders) headers mag toevoegen.
